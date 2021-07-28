@@ -37,7 +37,32 @@ export default class App extends Vue {
 
   @Prop()
   private people!: [];
-  private names: string[] = [];
+  private names: string[] = [
+    "太郎",
+    "二郎",
+    "三郎",
+    "サブちゃん",
+    "ニノ助",
+    "太一",
+    "じい",
+    "米たろう",
+    "米山",
+    "米介",
+    "米吉",
+    "SONY",
+    "ごめ",
+    "北小島",
+    "大関",
+    "春の富士",
+    "森鴎外",
+    "ヒュー",
+    "ベース",
+    "明日",
+    "晴太郎",
+    "曇り太郎",
+    "曇天太郎",
+    "雲泥太郎",
+  ];
 
   @Watch("people")
   updatesort(): void {
@@ -70,14 +95,14 @@ export default class App extends Vue {
 
   @Watch("selectMember")
   private select(person: number): string {
-    console.log(person);
+    // console.log(person);
     if (this.selectMember.includes(person))
       return "background-color: rgb(236, 169, 189);";
     return "";
   }
 
   mounted() {
-    this.names = JSON.parse(localStorage.names);
+    if (localStorage.names) this.names = JSON.parse(localStorage.names);
     this.seatArr = this.sort();
     // console.log(this.selectMember);
   }

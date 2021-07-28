@@ -13,12 +13,23 @@
             v-model="testTimes"
             placeholder="試行回数(0六個推奨)"
           /> -->
-          <input type="radio" id="light" value="10000" v-model="testTimes" />
-          <label for="light">light</label>
-          <input type="radio" id="nomal" value="100000" v-model="testTimes" />
-          <label for="nomal">nomal</label>
-          <input type="radio" id="heavy" value="1000000" v-model="testTimes" />
-          <label for="heavy">heavy</label>
+          <div>
+            <input type="radio" id="light" value="10000" v-model="testTimes" />
+            <label for="light">light</label>
+          </div>
+          <div>
+            <input type="radio" id="nomal" value="100000" v-model="testTimes" />
+            <label for="nomal">nomal</label>
+          </div>
+          <div>
+            <input
+              type="radio"
+              id="heavy"
+              value="1000000"
+              v-model="testTimes"
+            />
+            <label for="heavy">heavy</label>
+          </div>
         </div>
         <div
           class="group"
@@ -148,6 +159,10 @@ export default class App extends Vue {
   }
 
   private new_group(): void {
+    if (this.group_member == "") {
+      alert("メンバーを入れて");
+      return;
+    }
     const saveData = {
       name: this.group_name,
       weight: Number(this.group_weight),
@@ -156,9 +171,12 @@ export default class App extends Vue {
     this.group_name = this.group_member = "";
     this.group_weight = "25";
     this.groups.push(saveData);
+    localStorage.groups = JSON.stringify(this.groups);
   }
   private group_delete(id: number): void {
     this.groups.splice(id, 1);
+    this.selectMember = [];
+    localStorage.groups = JSON.stringify(this.groups);
   }
 
   private array_ave(arr: number[]): number {
@@ -211,6 +229,7 @@ export default class App extends Vue {
         this.people = JSON.parse(JSON.stringify(resource));
       }
     });
+    localStorage.people = JSON.stringify(this.people);
   }
 
   private highlight(member: number[]): void {
@@ -222,6 +241,8 @@ export default class App extends Vue {
 
   mounted(): void {
     this.names = JSON.parse(localStorage.names);
+    if (localStorage.groups) this.groups = JSON.parse(localStorage.groups);
+    if (localStorage.people) this.people = JSON.parse(localStorage.people);
   }
 }
 </script>
@@ -242,6 +263,7 @@ export default class App extends Vue {
 .control {
   display: flex;
   align-items: flex-start;
+  font-size: 2rem;
 }
 .groups {
   display: flex;
@@ -257,6 +279,11 @@ export default class App extends Vue {
   display: flex;
   justify-content: space-around;
 }
+.search-box input {
+  width: 27px;
+  height: 27px;
+  margin-right: 4px;
+}
 .search {
   width: 100px;
   padding: 8px 0;
@@ -264,6 +291,7 @@ export default class App extends Vue {
   color: white;
   border-radius: 10px;
   cursor: pointer;
+  line-height: 30px;
 }
 .search:hover {
   background-color: rgb(158, 217, 218);
@@ -273,8 +301,9 @@ export default class App extends Vue {
   padding: 10px;
   border: 2px solid rgb(223, 160, 160);
   border-radius: 10px;
-  height: 150px;
+  /* height: 150px; */
   margin: 10px;
+  font-size: 1.4rem;
 }
 .group:hover {
   box-shadow: 0 0 2px 2px red;
@@ -284,7 +313,7 @@ export default class App extends Vue {
   margin-bottom: 8px;
 }
 .group__delete {
-  width: 60px;
+  width: 80px;
   color: white;
   background-color: rgb(235, 63, 63);
   margin: 0 auto;
@@ -298,10 +327,11 @@ export default class App extends Vue {
 .new-group {
   width: 200px;
   border: 3px solid rgb(182, 177, 177);
-  height: 170px;
+  /* height: 170px; */
   border-radius: 10px;
   padding: 10px;
   margin: 10px;
+  font-size: 1.4rem;
 }
 .new-group input {
   margin-bottom: 10px;
@@ -309,7 +339,7 @@ export default class App extends Vue {
 .new-gropu__add {
   color: white;
   background-color: cornflowerblue;
-  width: 50px;
+  width: 70px;
   border-radius: 8px;
   margin: 0 auto;
   cursor: pointer;
