@@ -1,31 +1,62 @@
 <template>
   <div id="app">
-    <Seats :people="people" />
+    <Seats :people="people" :selectMember="selectMember" />
     <div class="control">
-      <Names />
+      <Names :names="names" />
       <div class="groups">
         <div class="search-box">
           <div @click="search()" class="search">
             search
           </div>
-          <input
+          <!-- <input
             type="number"
             v-model="testTimes"
             placeholder="試行回数(0六個推奨)"
-          />
+          /> -->
+          <input type="radio" id="light" value="10000" v-model="testTimes" />
+          <label for="light">light</label>
+          <input type="radio" id="nomal" value="100000" v-model="testTimes" />
+          <label for="nomal">nomal</label>
+          <input type="radio" id="heavy" value="1000000" v-model="testTimes" />
+          <label for="heavy">heavy</label>
         </div>
-        <div class="group" v-for="(group, index) in groups" :key="index">
+        <div
+          class="group"
+          v-for="(group, index) in groups"
+          :key="index"
+          @mouseover="highlight(group.member)"
+          @mouseleave="unhighlight()"
+        >
           <div class="group__name">{{ group.name }}</div>
           <div class="group__weight">重要度：{{ group.weight }}</div>
-          <div class="group__member">{{ group.member }}</div>
-          <div @click="group_delete(index)" class="group__delete">delete</div>
+          <div class="group__member">
+            <span
+              v-for="(member, memberIndex) in group.member"
+              :key="memberIndex"
+            >
+              {{ names[member - 1] }}
+            </span>
+          </div>
+          <div @click.stop="group_delete(index)" class="group__delete">
+            delete
+          </div>
         </div>
         <div class="new-group">
           <input type="text" v-model="group_name" placeholder="group name" />
-          <input
+          <!-- <input
             type="text"
             v-model="group_weight"
             placeholder="group weight"
+          /> -->
+          <br />
+          <label for="volume">重要度</label><br />
+          <input
+            type="range"
+            id="volume"
+            name="volume"
+            min="0"
+            max="50"
+            v-model="group_weight"
           />
           <input
             type="text"
@@ -64,11 +95,13 @@ interface GroupData {
   },
 })
 export default class App extends Vue {
-  private groups: any[] = [];
+  private groups: GroupData[] = [];
+  private selectMember: number[] = [];
   private group_name = "";
-  private group_weight = "";
+  private group_weight = "25";
   private group_member = "";
-  private testTimes = "";
+  private testTimes = "100000";
+  private names = [];
   private people: number[][] = [
     [1, 1],
     [1, 2],
@@ -114,29 +147,30 @@ export default class App extends Vue {
     return retArr;
   }
 
-  new_group(): void {
+  private new_group(): void {
     const saveData = {
       name: this.group_name,
       weight: Number(this.group_weight),
       member: this.string2arr(this.group_member),
     };
-    this.group_name = this.group_weight = this.group_member = "";
+    this.group_name = this.group_member = "";
+    this.group_weight = "25";
     this.groups.push(saveData);
   }
-  group_delete(id: number): void {
+  private group_delete(id: number): void {
     this.groups.splice(id, 1);
   }
 
-  array_ave(arr: number[]): number {
+  private array_ave(arr: number[]): number {
     return arr.reduce((previous, current) => previous + current) / arr.length;
   }
-  array_variance(arr: number[]): number {
+  private array_variance(arr: number[]): number {
     return (
       this.array_ave(arr.map((current) => current ** 2)) -
       this.array_ave(arr) ** 2
     );
   }
-  array_varianceVec2(arr: number[][]): number {
+  private array_varianceVec2(arr: number[][]): number {
     let x: number[] = [];
     let y: number[] = [];
     arr.forEach((data) => {
@@ -145,25 +179,24 @@ export default class App extends Vue {
     });
     return this.array_variance(x) + this.array_variance(y);
   }
-  array_evaluation(groupData: GroupData, resource: number[][]): number {
+  private array_evaluation(groupData: GroupData, resource: number[][]): number {
     let seatList: number[][] = [];
     groupData.member.forEach((data) => {
       seatList.push(resource[data - 1]);
     });
-    // console.log("----------------------");
-    // console.log(groupData);
-    // console.log(JSON.parse(JSON.stringify(resource)));
-    // console.log(this.array_varianceVec2(seatList) * groupData.weight);
-    return this.array_varianceVec2(seatList) * groupData.weight;
+    return (
+      (Math.floor(this.array_varianceVec2(seatList) * 100000) / 100000) *
+      groupData.weight
+    );
   }
-  array_shuffle(arr: number[][]): void {
+  private array_shuffle(arr: number[][]): void {
     for (let i = arr.length; 1 < i; i--) {
       const key = Math.floor(Math.random() * i);
       [arr[key], arr[i - 1]] = [arr[i - 1], arr[key]];
     }
   }
 
-  search(): void {
+  private search(): void {
     let best = -4200000000000000;
     const resource = JSON.parse(JSON.stringify(this.people));
     [...Array(Number(this.testTimes))].forEach(() => {
@@ -178,7 +211,17 @@ export default class App extends Vue {
         this.people = JSON.parse(JSON.stringify(resource));
       }
     });
-    // console.log(this.people);
+  }
+
+  private highlight(member: number[]): void {
+    this.selectMember = member;
+  }
+  private unhighlight(): void {
+    this.selectMember = [];
+  }
+
+  mounted(): void {
+    this.names = JSON.parse(localStorage.names);
   }
 }
 </script>
@@ -186,6 +229,8 @@ export default class App extends Vue {
 <style>
 * {
   box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 }
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
@@ -196,6 +241,7 @@ export default class App extends Vue {
 }
 .control {
   display: flex;
+  align-items: flex-start;
 }
 .groups {
   display: flex;
@@ -230,6 +276,10 @@ export default class App extends Vue {
   height: 150px;
   margin: 10px;
 }
+.group:hover {
+  box-shadow: 0 0 2px 2px red;
+  /* cursor: pointer; */
+}
 .group div:nth-child(n) {
   margin-bottom: 8px;
 }
@@ -248,7 +298,7 @@ export default class App extends Vue {
 .new-group {
   width: 200px;
   border: 3px solid rgb(182, 177, 177);
-  height: 150px;
+  height: 170px;
   border-radius: 10px;
   padding: 10px;
   margin: 10px;

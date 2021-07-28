@@ -6,8 +6,13 @@
       v-for="(row_seats, rowIndex) in seatArr"
       :key="rowIndex"
     >
-      <div class="seat" v-for="(seat, colIndex) in row_seats" :key="colIndex">
-        {{ seat }}
+      <div
+        class="seat"
+        :style="select(seat)"
+        v-for="(seat, colIndex) in row_seats"
+        :key="colIndex"
+      >
+        {{ names[seat - 1] }}
       </div>
       <div :class="'table' + (rowIndex % 2)"></div>
     </div>
@@ -28,10 +33,14 @@ import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 @Component({})
 export default class App extends Vue {
   @Prop()
+  selectMember!: number[];
+
+  @Prop()
   private people!: [];
+  private names: string[] = [];
 
   @Watch("people")
-  updatesort() {
+  updatesort(): void {
     this.seatArr = this.sort();
     // console.log(this.)
   }
@@ -59,10 +68,18 @@ export default class App extends Vue {
     return retArr;
   }
 
+  @Watch("selectMember")
+  private select(person: number): string {
+    console.log(person);
+    if (this.selectMember.includes(person))
+      return "background-color: rgb(236, 169, 189);";
+    return "";
+  }
+
   mounted() {
-    // console.log(this.people);
+    this.names = JSON.parse(localStorage.names);
     this.seatArr = this.sort();
-    // console.log(this.seatArr);
+    // console.log(this.selectMember);
   }
 }
 </script>
@@ -73,6 +90,8 @@ export default class App extends Vue {
   margin: 0 auto;
   border-right: 20px rgb(100, 98, 98) solid;
   border-left: 20px rgb(100, 98, 98) solid;
+  /* background-color: rgb(236, 169, 189); */
+  font-size: 2rem;
 }
 .row-seats {
   display: flex;
