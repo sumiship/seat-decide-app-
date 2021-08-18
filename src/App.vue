@@ -215,7 +215,7 @@ export default class App extends Vue {
   }
 
   private search(): void {
-    let best = -4200000000000000;
+    let best = -420000000000000;
     const resource = JSON.parse(JSON.stringify(this.people));
     [...Array(Number(this.testTimes))].forEach(() => {
       let score = 0;
